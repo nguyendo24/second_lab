@@ -5,7 +5,7 @@ n_traces = 200;
 traces = traces (1:n_traces, :); 
 traceSize = max(size(traces(1,:)));
 
-segmentLength = 40000; % for the beginning the segmentLength = traceSize
+segmentLength = 40000; 
 
 % variables declaration
 byteStart = 1;
@@ -14,19 +14,11 @@ keyCandidateStart = 0;
 keyCandidateStop = 255;
 solvedKey = zeros(1,byteEnd);
 
-% Create the hypothesis matrix 
-% (dimensions: rows = numberOfTraces, columns = 256). 
-% The number 256 represents all possible bytes (e.g., 0x00..0xFF)
-    
-
 for BYTE=byteStart:byteEnd
     DoM(1,:) = zeros(1,segmentLength);
     Hypothesis = zeros(n_traces,256);
     
-    for K = keyCandidateStart:keyCandidateStop                     
-        
-%         Hypothesis(1:length(n_traces),K+1)=bitxor(plain_text(1:length(n_traces),BYTE),K);
-%         Hypothesis(1:length(n_traces),K+1)=sbox(Hypothesis(1:length(n_traces),K+1)+1);
+    for K = keyCandidateStart:keyCandidateStop                             
 
         Hypothesis(:,K+1)=bitxor(plain_text(:,BYTE),K);
         Hypothesis(:,K+1)=sbox(Hypothesis(:,K+1)+1);
@@ -34,11 +26,9 @@ for BYTE=byteStart:byteEnd
         group1 = zeros(1,segmentLength);
         group2 = zeros(1,segmentLength);
      
-
         nbTracesG1 = 0;
         nbTracesG2 = 0;
-        
-        
+           
         for L = 1:n_traces
             
             firstByte = bitget(Hypothesis(L,K+1),1);
@@ -60,19 +50,22 @@ for BYTE=byteStart:byteEnd
     end
     
     
-    [ligne,colonne]=ind2sub(size(DoM), find(DoM==max(DoM(:))));
+   [X,Y]=ind2sub(size(DoM), find(DoM==max(DoM(:))));
     
-    solvedKey(1,BYTE) = ligne - 1;
+    solvedKey(1,BYTE) = X - 1;
 
-    fprintf('%x ', solvedKey);
-   
-    
-    
-%     figure(3);.m
-%     plot(groupFin(1,:));
-%     title('DPA !');
 end    
     
 
+% fprintf('%x ', solvedKey);   
 % solvedKey_hex = dec2hex(solvedKey);
 % A = reshape(solvedKey_hex,128,16);
+solvedKey_bi = dec2bin(solvedKey);
+originalKey = [00, 11, 22, 33, 44, 55, 66, 77, 88, 99, 'AA', 'BB', 'CC', 'DD', 'EE', 'FF'];
+originalKey_dec = [0, 17, 34, 51, 68, 85, 102, 119, 136, 153, 170, 187, 204, 221, 238, 255];
+originalKey_bi = dec2bin(originalKey_dec);
+
+result = originalKey_bi - solvedKey_bi;
+nonzeros = sum(result' ~=0);
+s = sum(nonzeros(1,:));
+accuracy = (128-s)/128 * 100;
