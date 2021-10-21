@@ -70,8 +70,8 @@ end
 
 solvedKey(1:length(traceDifferenceWithLargestValueX),currentKeyByte) = traceDifferenceWithLargestValueX - 1;
    
-A = ones(segmentLength,128);
-B = DoM*A*solvedKey;
+%A = ones(segmentLength,128);
+%B = DoM*A*solvedKey;
 %C = B.*solvedKey;
 %B = solvedKey(:,currentKeyByte);
 %[m,n] = size(B);
@@ -79,7 +79,12 @@ B = DoM*A*solvedKey;
 %C = transpose(B);
 %D = DoM.*A.*C;
 
-plot(B)
+%plot(B)
+
+%max_y_val = max(traceDifferenceWithLargestValueY (:));
+
+idxmin = max(traceDifferenceWithLargestValueY (:));
+
 
 %% Sample code to make plots 
 OFFSSET= 192 ; % for N=64, 0 , 64. 128, 192
@@ -87,10 +92,9 @@ N=8; % for an NxN plot
 for i = 1:N
     for j  =1:N
         subplot(N,N,(i-1)*N+j)
-        plot(DoM ((i-1)*N+j+OFFSSET, :) )
-        %plot(DoM ((i-1)*N+j+OFFSSET, :), '-p', 'MarkerIndices',[traceDifferenceWithLargestValueX, traceDifferenceWithLargestValueY],'Color','red' )
-        %plot(DoM ((i-1)*N+j+OFFSSET, :), '-p', 'MarkerIndices',[1:length(traceDifferenceWithLargestValueY)],'Color','red' )
-     
+        %plot(DoM ((i-1)*N+j+OFFSSET, :) )
+        plot(DoM ((i-1)*N+j+OFFSSET, :), '-p', 'MarkerIndices',idxmin,'MarkerFaceColor','red' )
+        
     end
 end
 
