@@ -1,8 +1,8 @@
-load('C:\Users\Nhat\Documents\Learning\Matlab\assignment2\aes_power_data.mat')
+load 'aes_power_data.mat';
 
 bytes_recovered = zeros (1,16);
 n_traces = 200; 
-traces = traces (1:n_traces, :); 
+traces = traces (1:n_traces, :);
 traceSize = max(size(traces(1,:))); %40000
 
 offset = 0;
@@ -18,16 +18,16 @@ keyCandidateStart = 0;
 keyCandidateStop = 255;
 solvedKey = zeros(1,byteEnd);
 
-% for every byte in the key we will do
-for BYTE=byteStart:byteEnd
+BYTE = 16;
 
     % Create the hypothesis matrix (dimensions: 
     % rows = n_traces, columns = 256). 
     % The number 256 represents all possible bytes (e.g., 0x00..0xFF)    
     DoM(1,:) = zeros(1,traceSize);
     Hypothesis = zeros(n_traces,256);
-    
-    for K = keyCandidateStart:keyCandidateStop                             
+
+    for K = keyCandidateStart:keyCandidateStop          
+        
         
         % Calculate the hypothesis
         Hypothesis(:,K+1)=bitxor(plain_text(1:n_traces,BYTE),K);
@@ -41,10 +41,10 @@ for BYTE=byteStart:byteEnd
         nbTracesG2 = 0;
            
         %for all traces put into one or other group based on 
-        % predicted Least Significant Bit
+        % predicted Least Significant Bit (LSB)
         for L = 1:n_traces
-            
-            % get the expected least significant bit from the hypothesis
+        
+        % get the expected least significant bit from the hypothesis
             firstByte = bitget(Hypothesis(L,K+1),1);
             
             if firstByte == 1
@@ -63,7 +63,8 @@ for BYTE=byteStart:byteEnd
         
         DoM(K+1,:) = abs(group1(1,:)-group2(1,:)); % Difference of means
     end
-    
+        
+
    % Retrieve the row that has the peak of the DoM
    % 1/ Find the max of all the row
    % 2/ Retrieve the row and column index of the max values
@@ -72,33 +73,19 @@ for BYTE=byteStart:byteEnd
    % get the right key for the current key byte guess
    solvedKey(1,BYTE) = X - 1;
 
-end    
-    
-% fprintf('%x ', solvedKey);   
-
+   
 % convert solved key to hexadecimal 
 solvedKey_hex = dec2hex(solvedKey);
 
-% convert solved key to binary
-solvedKey_bi = dec2bin(solvedKey);
-
-% original key in hexadecimal
-originalKey = [00, 11, 22, 33, 44, 55, 66, 77, 88, 99, 'AA', 'BB', 'CC', 'DD', 'EE', 'FF'];
-
-% original key in decimal
-originalKey_dec = [0, 17, 34, 51, 68, 85, 102, 119, 136, 153, 170, 187, 204, 221, 238, 255];
-
-% original key in binary
-originalKey_bi = dec2bin(originalKey_dec);
-
-% different between original key and solved key in binary
-result = originalKey_bi - solvedKey_bi;
-
-% aggregate non-zeros number
-nonzeros = sum(result' ~=0);
-
-% sum the number of non-zeros element
-s = sum(nonzeros(1,:));
-
-% calculate the accuracy
-accuracy = (128-s)/128 * 100;
+% Make the plots
+OFFSSET= 192 ; % for N=64, 0 , 64. 128, 192
+N=4; % for an NxN plot
+for i = 1:N
+    for j = 1:N
+        [X,Y] = find(DoM==max(DoM((i-1)*N+j+OFFSSET, :)));
+        index = max(Y(:));
+        subplot(N,N,(i-1)*N+j)
+        plot(DoM ((i-1)*N+j+OFFSSET, :), '--o', 'MarkerIndices',index,'MarkerFaceColor','yellow')
+        
+    end
+end
